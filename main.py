@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Discord bot guild leaver (safe alternative to self-bot/user-token scripts).
-
-Usage:
-  1) Put your bot token in token.txt
-  2) Put guild IDs to keep in exceptions.txt (one ID per line)
-  3) Run: python3 main.py
-"""
+"""Discord bot guild leaver (safe alternative to self-bot/user-token scripts)."""
 
 from __future__ import annotations
 
@@ -19,21 +13,36 @@ EXCEPTIONS_FILE = Path("exceptions.txt")
 RATE_DELAY_SECONDS = 1.2
 
 
+def ensure_exceptions_file(path: Path) -> None:
+    """Create exceptions.txt if missing so users can edit it immediately."""
+    if path.exists():
+        return
+
+    path.write_text(
+        "# Guild IDs to keep (one per line)\n"
+        "# Example: 123456789012345678\n",
+        encoding="utf-8",
+    )
+    print(f"[info] Created {path} template.")
+
+
 def load_token(path: Path) -> str:
+    """Load bot token. If missing, create template and explain next step."""
     if not path.exists():
+        path.write_text("PASTE_YOUR_BOT_TOKEN_HERE\n", encoding="utf-8")
         raise FileNotFoundError(
-            f"Missing {path}. Create it and paste your Discord bot token."
+            f"Created {path}. Open it, paste your bot token, save, then run again."
         )
+
     token = path.read_text(encoding="utf-8").strip()
-    if not token:
-        raise ValueError(f"{path} is empty. Paste your bot token into it.")
+    if not token or token == "PASTE_YOUR_BOT_TOKEN_HERE":
+        raise ValueError(
+            f"{path} is empty/template text. Paste your bot token into it, then run again."
+        )
     return token
 
 
 def load_exception_ids(path: Path) -> set[int]:
-    if not path.exists():
-        return set()
-
     keep: set[int] = set()
     for line in path.read_text(encoding="utf-8").splitlines():
         text = line.strip()
@@ -81,6 +90,7 @@ class LeaveBot(discord.Client):
 
 
 async def run() -> None:
+    ensure_exceptions_file(EXCEPTIONS_FILE)
     token = load_token(TOKEN_FILE)
     keep_ids = load_exception_ids(EXCEPTIONS_FILE)
 

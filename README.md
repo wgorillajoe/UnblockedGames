@@ -3,22 +3,37 @@
 This project is a **safe alternative** to user-token/self-bot server leaver scripts.
 It only works with a **Discord bot token**.
 
-## Why this version
-Using user account tokens in scripts is risky and can violate Discord Terms. This script is for bot accounts only.
+## Step-by-step (Windows)
+1. Install Python 3.10+ from https://www.python.org/downloads/.
+2. Put these files together in one folder:
+   - `main.py`
+   - `requirements.txt`
+   - `run_leaver.bat`
+3. Double-click `run_leaver.bat`.
+4. On first run, the script creates:
+   - `token.txt`
+   - `exceptions.txt`
+5. Open `token.txt`, replace `PASTE_YOUR_BOT_TOKEN_HERE` with your real bot token, and save.
+6. (Optional) Open `exceptions.txt` and add guild IDs you **do not** want the bot to leave (one per line).
+7. Double-click `run_leaver.bat` again.
+8. Watch the console output for leave/skip/fail results.
 
-## Install
-1. Create and activate a Python environment (optional but recommended).
+## Step-by-step (macOS/Linux)
+1. Open terminal in this folder.
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Put your bot token in `token.txt`.
-4. (Optional) Put guild IDs you want to keep in `exceptions.txt` (one ID per line).
-
-## Run
-```bash
-python3 main.py
-```
+3. Run once to create template files:
+   ```bash
+   python3 main.py
+   ```
+4. Edit `token.txt` and paste your bot token.
+5. (Optional) Edit `exceptions.txt` and add keep-guild IDs.
+6. Run again:
+   ```bash
+   python3 main.py
+   ```
 
 ## Notes
 - The script leaves guilds one-by-one with a small delay to reduce API pressure.
