@@ -35,6 +35,20 @@ It only works with a **Discord bot token**.
    python3 main.py
    ```
 
+
+## How to get your bot token
+1. Go to the Discord Developer Portal: https://discord.com/developers/applications
+2. Create an application (or open your existing one).
+3. Open **Bot** in the left sidebar.
+4. If needed, click **Add Bot**.
+5. In the bot page, click **Reset Token** (or **Copy** if visible).
+6. Paste that value into `token.txt` and save.
+
+### Important safety notes
+- Never share your bot token publicly.
+- If you accidentally leak it, immediately reset/regenerate it in the portal.
+- This script is for your own bot account only (not user account tokens).
+
 ## Notes
 - The script leaves guilds one-by-one with a small delay to reduce API pressure.
 - If an ID in `exceptions.txt` is invalid, it is skipped with a warning.
