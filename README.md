@@ -18,8 +18,16 @@ This creates `a.exe`.
 
 ## Run
 
+From command prompt:
+
 ```bat
-a.exe
+a.exe --no-pause
+```
+
+For double-click usage (prevents instant close):
+
+```bat
+run_a.bat
 ```
 
 ## Features
@@ -29,3 +37,6 @@ a.exe
 - Toggle invert pedals and sequential mode
 - Run separate tests for wheel and shifter
 - Save/load settings from `wheel_settings.cfg`
+
+
+> Tip: If you launch `a.exe` directly by double-clicking it, the program now waits for Enter before closing.

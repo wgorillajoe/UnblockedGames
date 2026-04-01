@@ -26,11 +26,31 @@ struct TestResult {
 
 std::string boolToText(bool value) { return value ? "ON" : "OFF"; }
 
+
+bool hasFlag(int argc, char* argv[], const std::string& flag) {
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i] == flag) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void waitForExit() {
+    std::cout << "\nPress Enter to close...";
+    std::string ignored;
+    std::getline(std::cin, ignored);
+}
+
 int askInt(const std::string& prompt, int minValue, int maxValue, int defaultValue) {
     while (true) {
         std::cout << prompt << " [" << minValue << "-" << maxValue << "] (default " << defaultValue << "): ";
         std::string line;
-        std::getline(std::cin, line);
+        if (!std::getline(std::cin, line)) {
+            std::cin.clear();
+            std::cout << "\nInput stream closed; using default value.\n";
+            return defaultValue;
+        }
 
         if (line.empty()) {
             return defaultValue;
@@ -50,7 +70,11 @@ bool askYesNo(const std::string& prompt, bool defaultValue) {
     while (true) {
         std::cout << prompt << " (" << (defaultValue ? "Y/n" : "y/N") << "): ";
         std::string line;
-        std::getline(std::cin, line);
+        if (!std::getline(std::cin, line)) {
+            std::cin.clear();
+            std::cout << "\nInput stream closed; using default value.\n";
+            return defaultValue;
+        }
 
         if (line.empty()) {
             return defaultValue;
@@ -209,7 +233,8 @@ void loadSettings(DeviceSettings& settings, const std::string& fileName) {
     std::cout << "Loaded settings from " << fileName << "\n";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    const bool noPause = hasFlag(argc, argv, "--no-pause");
     const std::string configFile = "wheel_settings.cfg";
     DeviceSettings settings;
     loadSettings(settings, configFile);
@@ -261,6 +286,10 @@ int main() {
                 std::cout << "Unexpected option.\n";
                 break;
         }
+    }
+
+    if (!noPause) {
+        waitForExit();
     }
 
     return 0;
