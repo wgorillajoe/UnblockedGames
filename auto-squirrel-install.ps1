@@ -1,8 +1,6 @@
 param(
-    [Parameter(Mandatory = $true)]
     [string]$AppName,
 
-    [Parameter(Mandatory = $true)]
     [string]$InstallerPath,
 
     [int]$MaxAttempts = 5,
@@ -21,10 +19,53 @@ function Write-Log {
     Write-Host "[$ts] $Message"
 }
 
+function Resolve-InstallerPath {
+    param([string]$InputPath)
+
+    if ($InputPath) {
+        return (Resolve-Path -Path $InputPath).Path
+    }
+
+    $candidates = @(
+        (Join-Path (Get-Location).Path 'Update.exe'),
+        (Join-Path $PSScriptRoot 'Update.exe')
+    )
+
+    foreach ($candidate in $candidates) {
+        if (Test-Path $candidate) {
+            return (Resolve-Path -Path $candidate).Path
+        }
+    }
+
+    throw "Installer not found. Pass -InstallerPath or place Update.exe in the current/script directory."
+}
+
+function Resolve-AppName {
+    param(
+        [string]$ProvidedAppName,
+        [string]$ResolvedInstallerPath
+    )
+
+    if ($ProvidedAppName) {
+        return $ProvidedAppName
+    }
+
+    $parent = Split-Path -Path (Split-Path -Path $ResolvedInstallerPath -Parent) -Leaf
+    if (-not [string]::IsNullOrWhiteSpace($parent)) {
+        return $parent
+    }
+
+    throw 'Could not determine AppName. Pass -AppName explicitly.'
+}
+
 function Stop-LockingProcesses {
     param([string[]]$ProcessNames)
 
-    foreach ($name in $ProcessNames) {
+    foreach ($name in $ProcessNames | Select-Object -Unique) {
+        if ([string]::IsNullOrWhiteSpace($name)) {
+            continue
+        }
+
         try {
             $procs = Get-Process -Name $name -ErrorAction SilentlyContinue
             if ($null -ne $procs) {
@@ -47,21 +88,25 @@ function Invoke-SquirrelInstall {
         throw "Installer not found: $Path"
     }
 
+    $workingDir = Split-Path -Path $Path -Parent
     Write-Log "Launching installer: $Path"
-    $proc = Start-Process -FilePath $Path -ArgumentList '--install', '.' -Wait -PassThru
+    $proc = Start-Process -FilePath $Path -ArgumentList '--install', '.' -WorkingDirectory $workingDir -Wait -PassThru
     return $proc.ExitCode
 }
 
-$appRoot = Join-Path $LocalAppDataPath $AppName
+$resolvedInstallerPath = Resolve-InstallerPath -InputPath $InstallerPath
+$resolvedAppName = Resolve-AppName -ProvidedAppName $AppName -ResolvedInstallerPath $resolvedInstallerPath
+
+$appRoot = Join-Path $LocalAppDataPath $resolvedAppName
 $packagesDir = Join-Path $appRoot 'packages'
 $knownProcesses = @(
-    $AppName,
+    $resolvedAppName,
     'Update',
     'Squirrel'
 ) + $ExtraProcessNames
 
-Write-Log "AppName: $AppName"
-Write-Log "InstallerPath: $InstallerPath"
+Write-Log "AppName: $resolvedAppName"
+Write-Log "InstallerPath: $resolvedInstallerPath"
 Write-Log "App root: $appRoot"
 Write-Log "Max attempts: $MaxAttempts"
 
@@ -81,7 +126,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     }
 
     try {
-        $exitCode = Invoke-SquirrelInstall -Path $InstallerPath
+        $exitCode = Invoke-SquirrelInstall -Path $resolvedInstallerPath
         if ($exitCode -eq 0) {
             Write-Log 'Install completed successfully.'
             exit 0
