@@ -53,3 +53,11 @@ It only works with a **Discord bot token**.
 - The script leaves guilds one-by-one with a small delay to reduce API pressure.
 - If an ID in `exceptions.txt` is invalid, it is skipped with a warning.
 - Bots cannot leave guilds they are not in.
+
+
+## If it says "Connected guilds: 0"
+- Confirm the bot is actually invited to at least one server.
+- Confirm `token.txt` contains the token from the same application/bot you invited.
+- Regenerate token in Developer Portal and update `token.txt` if unsure.
+- Re-run `run_leaver.bat` (Windows) or `python3 main.py` (macOS/Linux).
+

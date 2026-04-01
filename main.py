@@ -64,6 +64,11 @@ class LeaveBot(discord.Client):
         print(f"Logged in as {self.user} (id={self.user.id})")
         print(f"Connected guilds: {len(self.guilds)}")
 
+        if not self.guilds:
+            print("[info] No guilds found for this bot.")
+            print("[info] Make sure the bot is invited to servers using the OAuth2 URL.")
+            print("[info] Also verify you are using the correct bot token for that application.")
+
         left = 0
         skipped = 0
         failed = 0
@@ -94,7 +99,8 @@ async def run() -> None:
     token = load_token(TOKEN_FILE)
     keep_ids = load_exception_ids(EXCEPTIONS_FILE)
 
-    intents = discord.Intents.none()
+    intents = discord.Intents.default()
+    intents.guilds = True
     client = LeaveBot(keep_ids=keep_ids, intents=intents)
     await client.start(token)
 
